@@ -61,6 +61,10 @@ public class CameraInterface implements Camera.PreviewCallback {
         }
     }
 
+    public Camera getCamera() {
+        return mCamera;
+    }
+
     private Camera mCamera;
     private Camera.Parameters mParams;
     private boolean isPreviewing = false;

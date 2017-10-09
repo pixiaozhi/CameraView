@@ -36,6 +36,7 @@ public class CameraActivity extends AppCompatActivity {
         jCameraView.setFeatures(JCameraView.BUTTON_STATE_BOTH);
         jCameraView.setTip("JCameraView Tip");
         jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
+        
         jCameraView.setErrorLisenter(new ErrorListener() {
             @Override
             public void onError() {

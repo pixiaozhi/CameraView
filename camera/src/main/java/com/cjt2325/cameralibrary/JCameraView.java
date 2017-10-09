@@ -11,7 +11,6 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -34,6 +33,7 @@ import com.cjt2325.cameralibrary.util.ScreenUtils;
 import com.cjt2325.cameralibrary.view.CameraView;
 
 import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -113,6 +113,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
     private boolean firstTouch = true;
     private float firstTouchLength = 0;
+    private Camera mCamera;
 
     public JCameraView(Context context) {
         this(context, null);
@@ -277,6 +278,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     @Override
     public void cameraHasOpened() {
         CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
+        CameraInterface.getInstance().setZoom(10, CameraInterface.TYPE_CAPTURE);
     }
 
     //生命周期onResume
@@ -320,49 +322,124 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     }
 
 
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        switch (event.getAction()) {
+//            case MotionEvent.ACTION_DOWN:
+//                if (event.getPointerCount() == 1) {
+//                    //显示对焦指示器
+//                    setFocusViewWidthAnimation(event.getX(), event.getY());
+//                }
+//                if (event.getPointerCount() == 2) {
+//                    Log.i("CJT", "ACTION_DOWN = " + 2);
+//                }
+//                break;
+//            case MotionEvent.ACTION_MOVE:
+//                if (event.getPointerCount() == 1) {
+//                    firstTouch = true;
+//                }
+//                if (event.getPointerCount() == 2) {
+//                    //第一个点
+//                    float point_1_X = event.getX(0);
+//                    float point_1_Y = event.getY(0);
+//                    //第二个点
+//                    float point_2_X = event.getX(1);
+//                    float point_2_Y = event.getY(1);
+//
+//                    float result = (float) Math.sqrt(Math.pow(point_1_X - point_2_X, 2) + Math.pow(point_1_Y -
+//                            point_2_Y, 2));
+//
+//                    if (firstTouch) {
+//                        firstTouchLength = result;
+//                        firstTouch = false;
+//                    }
+//                    if ((int) (result - firstTouchLength) / zoomGradient != 0) {
+//                        firstTouch = true;
+//                        machine.zoom(result - firstTouchLength, CameraInterface.TYPE_CAPTURE);
+//                    }
+////                    Log.i("CJT", "result = " + (result - firstTouchLength));
+//                }
+//                break;
+//            case MotionEvent.ACTION_UP:
+//                firstTouch = true;
+//                break;
+//        }
+//        return true;
+//    }
+
+    float mDist = 0;
+
+    //  Enabling pinch zoom in zoom out
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if (event.getPointerCount() == 1) {
-                    //显示对焦指示器
-                    setFocusViewWidthAnimation(event.getX(), event.getY());
-                }
-                if (event.getPointerCount() == 2) {
-                    Log.i("CJT", "ACTION_DOWN = " + 2);
-                }
-                break;
-            case MotionEvent.ACTION_MOVE:
-                if (event.getPointerCount() == 1) {
-                    firstTouch = true;
-                }
-                if (event.getPointerCount() == 2) {
-                    //第一个点
-                    float point_1_X = event.getX(0);
-                    float point_1_Y = event.getY(0);
-                    //第二个点
-                    float point_2_X = event.getX(1);
-                    float point_2_Y = event.getY(1);
+        // Get the pointer ID
+        mCamera = CameraInterface.getInstance().getCamera();
+        Camera.Parameters params = CameraInterface.getInstance().getCamera().getParameters();
+        int action = event.getAction();
 
-                    float result = (float) Math.sqrt(Math.pow(point_1_X - point_2_X, 2) + Math.pow(point_1_Y -
-                            point_2_Y, 2));
 
-                    if (firstTouch) {
-                        firstTouchLength = result;
-                        firstTouch = false;
-                    }
-                    if ((int) (result - firstTouchLength) / zoomGradient != 0) {
-                        firstTouch = true;
-                        machine.zoom(result - firstTouchLength, CameraInterface.TYPE_CAPTURE);
-                    }
-//                    Log.i("CJT", "result = " + (result - firstTouchLength));
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                firstTouch = true;
-                break;
+        if (event.getPointerCount() > 1) {
+            // handle multi-touch events
+            if (action == MotionEvent.ACTION_POINTER_DOWN) {
+                mDist = getFingerSpacing(event);
+            } else if (action == MotionEvent.ACTION_MOVE && params.isZoomSupported()) {
+                mCamera.cancelAutoFocus();
+                handleZoom(event, params);
+            }
+        } else {
+            // handle single touch events
+            if (action == MotionEvent.ACTION_UP) {
+                handleFocus(event, params);
+            }
         }
         return true;
+    }
+
+    public void handleFocus(MotionEvent event, Camera.Parameters params) {
+        int pointerId = event.getPointerId(0);
+        int pointerIndex = event.findPointerIndex(pointerId);
+        // Get the pointer's current position
+        float x = event.getX(pointerIndex);
+        float y = event.getY(pointerIndex);
+
+        List<String> supportedFocusModes = params.getSupportedFocusModes();
+        if (supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean b, Camera camera) {
+                    // currently set to auto-focus on single touch
+                }
+            });
+        }
+    }
+
+    private void handleZoom(MotionEvent event, Camera.Parameters params) {
+        int maxZoom = params.getMaxZoom();
+        int zoom = params.getZoom();
+        float newDist = getFingerSpacing(event);
+        if (newDist > mDist) {
+            //zoom in
+            if (zoom < maxZoom)
+                zoom++;
+        } else if (newDist < mDist) {
+            //zoom out
+            if (zoom > 0)
+                zoom--;
+        }
+        mDist = newDist;
+        params.setZoom(zoom);
+//        machine.zoom(zoom, TYPE_PICTURE);
+        mCamera.setParameters(params);
+    }
+
+    /**
+     * Determine the space between the first two fingers
+     */
+    private float getFingerSpacing(MotionEvent event) {
+        // ...
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float) Math.sqrt(x * x + y * y);
     }
 
     //对焦框指示器动画
