@@ -33,7 +33,6 @@ import com.cjt2325.cameralibrary.util.ScreenUtils;
 import com.cjt2325.cameralibrary.view.CameraView;
 
 import java.io.IOException;
-import java.util.List;
 
 
 /**
@@ -113,7 +112,12 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
     private boolean firstTouch = true;
     private float firstTouchLength = 0;
-    private Camera mCamera;
+
+    public void setShortVideoTipText(String shortVideoTipText) {
+        this.shortVideoTipText = shortVideoTipText;
+    }
+
+    private String shortVideoTipText = "Video is too short";
 
     public JCameraView(Context context) {
         this(context, null);
@@ -170,6 +174,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         mCaptureLayout = (CaptureLayout) view.findViewById(R.id.capture_layout);
         mCaptureLayout.setDuration(duration);
         mCaptureLayout.setIconSrc(iconLeft, iconRight);
+        //  TODO show/hide Tip text
+        mCaptureLayout.showTip(true);
         mFoucsView = (FoucsView) view.findViewById(R.id.fouce_view);
         mVideoView.getHolder().addCallback(this);
         //切换摄像头
@@ -197,7 +203,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
             @Override
             public void recordShort(final long time) {
-                mCaptureLayout.setTextWithAnimation("录制时间过短");
+                //  TODO Short video Tip Text
+                mCaptureLayout.setTextWithAnimation(shortVideoTipText);
                 mSwitchCamera.setVisibility(VISIBLE);
                 mFlashLamp.setVisibility(VISIBLE);
                 postDelayed(new Runnable() {
@@ -278,7 +285,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     @Override
     public void cameraHasOpened() {
         CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
-        CameraInterface.getInstance().setZoom(10, CameraInterface.TYPE_CAPTURE);
+//        CameraInterface.getInstance().setZoom(10, CameraInterface.TYPE_CAPTURE);
     }
 
     //生命周期onResume
@@ -372,64 +379,23 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     //  Enabling pinch zoom in zoom out
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Get the pointer ID
-        mCamera = CameraInterface.getInstance().getCamera();
-        Camera.Parameters params = CameraInterface.getInstance().getCamera().getParameters();
         int action = event.getAction();
-
 
         if (event.getPointerCount() > 1) {
             // handle multi-touch events
             if (action == MotionEvent.ACTION_POINTER_DOWN) {
                 mDist = getFingerSpacing(event);
-            } else if (action == MotionEvent.ACTION_MOVE && params.isZoomSupported()) {
-                mCamera.cancelAutoFocus();
-                handleZoom(event, params);
+            } else if (action == MotionEvent.ACTION_MOVE && CameraInterface.getInstance().isZoomSupported()) {
+                CameraInterface.getInstance().handleZoom(event);
+                CameraInterface.getInstance().cancelAutoFocus();
             }
         } else {
             // handle single touch events
             if (action == MotionEvent.ACTION_UP) {
-                handleFocus(event, params);
+                CameraInterface.getInstance().handleFocus(event);
             }
         }
         return true;
-    }
-
-    public void handleFocus(MotionEvent event, Camera.Parameters params) {
-        int pointerId = event.getPointerId(0);
-        int pointerIndex = event.findPointerIndex(pointerId);
-        // Get the pointer's current position
-        float x = event.getX(pointerIndex);
-        float y = event.getY(pointerIndex);
-
-        List<String> supportedFocusModes = params.getSupportedFocusModes();
-        if (supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-            mCamera.autoFocus(new Camera.AutoFocusCallback() {
-                @Override
-                public void onAutoFocus(boolean b, Camera camera) {
-                    // currently set to auto-focus on single touch
-                }
-            });
-        }
-    }
-
-    private void handleZoom(MotionEvent event, Camera.Parameters params) {
-        int maxZoom = params.getMaxZoom();
-        int zoom = params.getZoom();
-        float newDist = getFingerSpacing(event);
-        if (newDist > mDist) {
-            //zoom in
-            if (zoom < maxZoom)
-                zoom++;
-        } else if (newDist < mDist) {
-            //zoom out
-            if (zoom > 0)
-                zoom--;
-        }
-        mDist = newDist;
-        params.setZoom(zoom);
-//        machine.zoom(zoom, TYPE_PICTURE);
-        mCamera.setParameters(params);
     }
 
     /**

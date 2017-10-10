@@ -34,9 +34,9 @@ public class CameraActivity extends AppCompatActivity {
         //设置视频保存路径
         jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
         jCameraView.setFeatures(JCameraView.BUTTON_STATE_BOTH);
-        jCameraView.setTip("JCameraView Tip");
+        jCameraView.setTip("Long tap to record video");
         jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
-        
+
         jCameraView.setErrorLisenter(new ErrorListener() {
             @Override
             public void onError() {
@@ -49,7 +49,7 @@ public class CameraActivity extends AppCompatActivity {
 
             @Override
             public void AudioPermissionError() {
-                Toast.makeText(CameraActivity.this, "给点录音权限可以?", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CameraActivity.this, "Audio permission missing", Toast.LENGTH_SHORT).show();
             }
         });
         //JCameraView监听
@@ -86,11 +86,14 @@ public class CameraActivity extends AppCompatActivity {
         jCameraView.setRightClickListener(new ClickListener() {
             @Override
             public void onClick() {
-                Toast.makeText(CameraActivity.this,"Right",Toast.LENGTH_SHORT).show();
+                Toast.makeText(CameraActivity.this, "Right", Toast.LENGTH_SHORT).show();
             }
         });
 
         Log.i("CJT", DeviceUtil.getDeviceModel());
+
+        //  My customisation
+        jCameraView.setShortVideoTipText("Video duration is too short");
     }
 
     @Override

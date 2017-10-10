@@ -285,6 +285,7 @@ public class CaptureLayout extends FrameLayout {
         this.addView(btn_return);
         this.addView(iv_custom_left);
         this.addView(iv_custom_right);
+        // TODO Disabling TIP View
         this.addView(txt_tip);
 
     }
@@ -334,8 +335,8 @@ public class CaptureLayout extends FrameLayout {
         txt_tip.setText(tip);
     }
 
-    public void showTip() {
-        txt_tip.setVisibility(VISIBLE);
+    public void showTip(boolean visibility) {
+        txt_tip.setVisibility(visibility ? View.VISIBLE : View.GONE);
     }
 
     public void setIconSrc(int iconLeft, int iconRight) {
