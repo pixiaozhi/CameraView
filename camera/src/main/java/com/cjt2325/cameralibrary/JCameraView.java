@@ -9,6 +9,7 @@ import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.CountDownTimer;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -19,6 +20,7 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.cjt2325.cameralibrary.listener.CaptureListener;
@@ -112,6 +114,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
     private boolean firstTouch = true;
     private float firstTouchLength = 0;
+    private TextView tvCounter;
+    private CountDownTimer waitTimer;
 
     public void setShortVideoTipText(String shortVideoTipText) {
         this.shortVideoTipText = shortVideoTipText;
@@ -171,6 +175,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 setFlashRes();
             }
         });
+        tvCounter = (TextView) view.findViewById(R.id.tvCounter);
         mCaptureLayout = (CaptureLayout) view.findViewById(R.id.capture_layout);
         mCaptureLayout.setDuration(duration);
         mCaptureLayout.setIconSrc(iconLeft, iconRight);
@@ -199,6 +204,22 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 mSwitchCamera.setVisibility(INVISIBLE);
                 mFlashLamp.setVisibility(INVISIBLE);
                 machine.record(mVideoView.getHolder().getSurface(), screenProp);
+
+                //  TODO Show counter
+                tvCounter.setVisibility(View.VISIBLE);
+                waitTimer = new CountDownTimer(30000, 1000) {
+
+                    public void onTick(long millisUntilFinished) {
+                        tvCounter.setText(millisUntilFinished / 1000 + "s");
+                        //here you can have your logic to set text to edittext
+                    }
+
+                    public void onFinish() {
+                        tvCounter.setText("done!");
+                        stopTimer();
+                    }
+
+                }.start();
             }
 
             @Override
@@ -207,6 +228,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 mCaptureLayout.setTextWithAnimation(shortVideoTipText);
                 mSwitchCamera.setVisibility(VISIBLE);
                 mFlashLamp.setVisibility(VISIBLE);
+                stopTimer();
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -218,6 +240,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
             @Override
             public void recordEnd(long time) {
                 machine.stopRecord(false, time);
+                stopTimer();
             }
 
             @Override
@@ -231,6 +254,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 if (errorLisenter != null) {
                     errorLisenter.AudioPermissionError();
                 }
+                stopTimer();
             }
         });
         //确认 取消
@@ -270,6 +294,14 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 }
             }
         });
+    }
+
+    private void stopTimer() {
+        if (waitTimer != null) {
+            waitTimer.cancel();
+            waitTimer = null;
+            tvCounter.setVisibility(View.GONE);
+        }
     }
 
     @Override
