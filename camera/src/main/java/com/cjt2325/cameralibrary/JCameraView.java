@@ -285,7 +285,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     @Override
     public void cameraHasOpened() {
         CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
-//        CameraInterface.getInstance().setZoom(10, CameraInterface.TYPE_CAPTURE);
+        CameraInterface.getInstance().startAutoFocus();
     }
 
     //生命周期onResume
@@ -374,8 +374,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 //        return true;
 //    }
 
-    float mDist = 0;
-
     //  Enabling pinch zoom in zoom out
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -384,28 +382,17 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         if (event.getPointerCount() > 1) {
             // handle multi-touch events
             if (action == MotionEvent.ACTION_POINTER_DOWN) {
-                mDist = getFingerSpacing(event);
+//                mDist = getFingerSpacing(event);
             } else if (action == MotionEvent.ACTION_MOVE && CameraInterface.getInstance().isZoomSupported()) {
                 CameraInterface.getInstance().handleZoom(event);
-                CameraInterface.getInstance().cancelAutoFocus();
             }
         } else {
             // handle single touch events
             if (action == MotionEvent.ACTION_UP) {
-                CameraInterface.getInstance().handleFocus(event);
+                setFocusViewWidthAnimation(event.getX(), event.getY());
             }
         }
         return true;
-    }
-
-    /**
-     * Determine the space between the first two fingers
-     */
-    private float getFingerSpacing(MotionEvent event) {
-        // ...
-        float x = event.getX(0) - event.getX(1);
-        float y = event.getY(0) - event.getY(1);
-        return (float) Math.sqrt(x * x + y * y);
     }
 
     //对焦框指示器动画

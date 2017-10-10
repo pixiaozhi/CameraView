@@ -793,13 +793,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         mCamera.cancelAutoFocus();
     }
 
-    public void handleFocus(MotionEvent event) {
-        int pointerId = event.getPointerId(0);
-        int pointerIndex = event.findPointerIndex(pointerId);
-        // Get the pointer's current position
-        float x = event.getX(pointerIndex);
-        float y = event.getY(pointerIndex);
-
+    public void startAutoFocus() {
         List<String> supportedFocusModes = mParams.getSupportedFocusModes();
         if (supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
             mCamera.autoFocus(new Camera.AutoFocusCallback() {
