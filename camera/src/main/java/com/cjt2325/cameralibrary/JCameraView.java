@@ -117,6 +117,13 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     private TextView tvCounter;
     private CountDownTimer waitTimer;
 
+    public void showCounter(boolean shouldShowCounter) {
+        this.shouldShowCounter = shouldShowCounter;
+    }
+
+    //  Enabling this should show counter
+    private boolean shouldShowCounter = false;
+
     public void setShortVideoTipText(String shortVideoTipText) {
         this.shortVideoTipText = shortVideoTipText;
     }
@@ -206,20 +213,22 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 machine.record(mVideoView.getHolder().getSurface(), screenProp);
 
                 //  TODO Show counter
-                tvCounter.setVisibility(View.VISIBLE);
-                waitTimer = new CountDownTimer(30000, 1000) {
+                if (shouldShowCounter) {
+                    tvCounter.setVisibility(View.VISIBLE);
+                    waitTimer = new CountDownTimer(duration, 1000) {
 
-                    public void onTick(long millisUntilFinished) {
-                        tvCounter.setText(millisUntilFinished / 1000 + "s");
-                        //here you can have your logic to set text to edittext
-                    }
+                        public void onTick(long millisUntilFinished) {
+                            tvCounter.setText(millisUntilFinished / 1000 + "s");
+                            //here you can have your logic to set text to edittext
+                        }
 
-                    public void onFinish() {
-                        tvCounter.setText("done!");
-                        stopTimer();
-                    }
+                        public void onFinish() {
+                            tvCounter.setText("done!");
+                            stopTimer();
+                        }
 
-                }.start();
+                    }.start();
+                }
             }
 
             @Override

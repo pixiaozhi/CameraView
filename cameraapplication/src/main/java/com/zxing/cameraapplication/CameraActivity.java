@@ -94,6 +94,7 @@ public class CameraActivity extends AppCompatActivity {
 
         //  My customisation
         jCameraView.setShortVideoTipText("Video duration is too short");
+        jCameraView.showCounter(true);
     }
 
     @Override
