@@ -13,6 +13,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.cjt2325.cameralibrary.JCameraView;
+import com.cjt2325.cameralibrary.listener.CaptureListener;
 import com.cjt2325.cameralibrary.listener.ClickListener;
 import com.cjt2325.cameralibrary.listener.ErrorListener;
 import com.cjt2325.cameralibrary.listener.JCameraListener;
@@ -95,6 +96,38 @@ public class CameraActivity extends AppCompatActivity {
         //  My customisation
         jCameraView.setShortVideoTipText("Video duration is too short");
         jCameraView.showCounter(true);
+        jCameraView.setZoomEnabled(true);
+        jCameraView.setCaptureListener(new CaptureListener() {
+            @Override
+            public void takePictures() {
+
+            }
+
+            @Override
+            public void recordShort(long time) {
+
+            }
+
+            @Override
+            public void recordStart() {
+
+            }
+
+            @Override
+            public void recordEnd(long time) {
+
+            }
+
+            @Override
+            public void recordZoom(float zoom) {
+
+            }
+
+            @Override
+            public void recordError() {
+
+            }
+        });
     }
 
     @Override

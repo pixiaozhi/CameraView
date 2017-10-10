@@ -116,6 +116,17 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     private float firstTouchLength = 0;
     private TextView tvCounter;
     private CountDownTimer waitTimer;
+    private CaptureListener captureListenerOfUser;
+
+    public boolean isZoomEnabled() {
+        return zoomEnabled;
+    }
+
+    public void setZoomEnabled(boolean zoomEnabled) {
+        this.zoomEnabled = zoomEnabled;
+    }
+
+    private boolean zoomEnabled = false;
 
     public void showCounter(boolean shouldShowCounter) {
         this.shouldShowCounter = shouldShowCounter;
@@ -164,6 +175,10 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         machine = new CameraMachine(getContext(), this, this);
     }
 
+    public void setCaptureListener(CaptureListener captureListener) {
+        this.captureListenerOfUser = captureListener;
+    }
+
     private void initView() {
         setWillNotDraw(false);
         View view = LayoutInflater.from(mContext).inflate(R.layout.camera_view, this);
@@ -204,6 +219,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 mSwitchCamera.setVisibility(INVISIBLE);
                 mFlashLamp.setVisibility(INVISIBLE);
                 machine.capture();
+                if (captureListenerOfUser != null)
+                    captureListenerOfUser.takePictures();
             }
 
             @Override
@@ -229,6 +246,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
                     }.start();
                 }
+                if (captureListenerOfUser != null)
+                    captureListenerOfUser.recordStart();
             }
 
             @Override
@@ -244,18 +263,23 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                         machine.stopRecord(true, time);
                     }
                 }, 1500 - time);
+                if (captureListenerOfUser != null)
+                    captureListenerOfUser.recordShort(time);
             }
 
             @Override
             public void recordEnd(long time) {
                 machine.stopRecord(false, time);
                 stopTimer();
+                if (captureListenerOfUser != null) captureListenerOfUser.recordEnd(time);
             }
 
             @Override
             public void recordZoom(float zoom) {
                 LogUtil.i("recordZoom");
                 machine.zoom(zoom, CameraInterface.TYPE_RECORDER);
+                if (captureListenerOfUser != null)
+                    captureListenerOfUser.recordZoom(zoom);
             }
 
             @Override
@@ -264,6 +288,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                     errorLisenter.AudioPermissionError();
                 }
                 stopTimer();
+                if (captureListenerOfUser != null)
+                    captureListenerOfUser.recordError();
             }
         });
         //确认 取消
@@ -422,10 +448,12 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
         if (event.getPointerCount() > 1) {
             // handle multi-touch events
-            if (action == MotionEvent.ACTION_POINTER_DOWN) {
+            if (zoomEnabled) {
+                if (action == MotionEvent.ACTION_POINTER_DOWN) {
 //                mDist = getFingerSpacing(event);
-            } else if (action == MotionEvent.ACTION_MOVE && CameraInterface.getInstance().isZoomSupported()) {
-                CameraInterface.getInstance().handleZoom(event);
+                } else if (action == MotionEvent.ACTION_MOVE && CameraInterface.getInstance().isZoomSupported()) {
+                    CameraInterface.getInstance().handleZoom(event);
+                }
             }
         } else {
             // handle single touch events
