@@ -1,14 +1,16 @@
 # ICameraView（2.0）
 
-Instruction :
-1. Click to take a picture
-2. Pinch for zoom in and zoom out
-3. 10s video about 1.9M or so
-4. Long press video (video length can be set)
-5. The recorded video can be viewed and played repeatedly
-6. Front and rear camera switching
+1.点击拍照
 
+2.手势捏合放大和缩小
 
+3.10s视频约1.9M左右
+
+4.长按视频（可设置视频长度）
+
+5.可以重复查看和播放录制的视频
+
+6.前后摄像头切换
 
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_0.jpg)
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_1.jpg)
