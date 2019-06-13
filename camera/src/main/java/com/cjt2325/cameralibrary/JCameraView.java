@@ -373,6 +373,12 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         CameraInterface.getInstance().unregisterSensorManager(mContext);
     }
 
+    //生命周期onDestory
+    public void onDestory() {
+        LogUtil.i("JCameraView onDestory");
+        mVideoView.getHolder().removeCallback(this);
+    }
+
     //SurfaceView生命周期
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
