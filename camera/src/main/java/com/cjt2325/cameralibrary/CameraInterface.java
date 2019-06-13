@@ -302,7 +302,8 @@ public class CameraInterface implements Camera.PreviewCallback {
             }
         }
         if (mCamera == null) {
-            openCamera(SELECTED_CAMERA);
+            //默认开启后置摄像头
+            openCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
         }
         callback.cameraHasOpened();
     }
@@ -382,6 +383,7 @@ public class CameraInterface implements Camera.PreviewCallback {
                 preview_height = previewSize.height;
 
                 mParams.setPictureSize(pictureSize.width, pictureSize.height);
+
 
                 if (CameraParamUtil.getInstance().isSupportedFocusMode(
                         mParams.getSupportedFocusModes(),
