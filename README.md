@@ -1,10 +1,15 @@
 # ICameraView（2.0）
 
 1.点击拍照
+
 2.手势捏合放大和缩小
+
 3.10s视频约1.9M左右
+
 4.长按视频（可设置视频长度）
+
 5.可以重复查看和播放录制的视频
+
 6.前后摄像头切换
 
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_0.jpg)
